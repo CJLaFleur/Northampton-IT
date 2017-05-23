@@ -20,10 +20,7 @@ function Get-IPs {
     [Int]$BitCount = 0
     [String]$Subnet
 
-   $StartIP.Length
-   $EndIP.Length
-
-    for([Int] $i = 0, $i -LT $StartLength; $i++){
+    for([Int] $i = 0, $i -LT $StartIP.Length; $i++){
         if($StartIP[$i] -EQ "."){
            $BitCount++
         }
@@ -34,27 +31,30 @@ function Get-IPs {
         }
     }
 
-    for([Int] $i = 0, $i -LT $EndLength; $i++){
-        if($EndIP[$i] -EQ "."){
+    for([Int] $j = 0, $j -LT $EndIP.Length; $j++){
+        if($EndIP[$j] -EQ "."){
            $BitCount++
         }
         if ($BitCount -EQ 3) {
-            [Int] $EndLastBit = $EndIP.Substring($i)
+            [Int] $EndLastBit = $EndIP.Substring($j)
             $BitCount = 0
             break
         }
     }
 
-    for([Int] $i = $Subnet.Length; $i -GE 0; $i--){
+    for([Int] $k = $Subnet.Length; $k -GE 0; $k--){
             $Subnet = $Subnet -Replace ".$"
-            if($Subnet[$i] -EQ "."){
+            if($Subnet[$k] -EQ "."){
                 break
             }
         }
 
-   $IPrange = "$($Subnet) $($StartLastBit..$EndLastBit)"
+   [String[]] $IPrange = "$($Subnet) $($StartLastBit..$EndLastBit)"
 
    foreach($IP in $IPrange) {
        Test-Connection $IP -Count 1 -Quiet | Where-Object {$_ -EQ "True"}
+            $Properties = @{IPAddress = $IP
+                            Status = 'Connected'
+                           }
    }
 }
