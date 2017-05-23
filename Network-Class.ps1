@@ -1,12 +1,37 @@
-function Get-IPs {
+Class Network{
+
+  #Beginning and end of IP range in a given Subnet, as well as the subnet and IPRange as an array of strings.
+  [String] $StartIP
+  [String] $EndIP
+  [String] $Subnet
+  [String] $FirstSubnet
+  [String] $LastSubnet
+  [String[]] $IPrange
+
+  #Constructor to be used when working with only one subnet.
+  Network($StartIP, $EndIP){
+    $This.StartIP = $StartIP
+    $This.EndIP = $EndIP
+  }
+
+  #Constructor to be used when working with multiple subnets.
+  Network($StartIP, $EndIP, $FirstSubnet, $LastSubnet){
+    $This.StartIP = $StartIP
+    $This.EndIP = $EndIP
+    $This.FirstSubnet = $FirstSubnet
+    $This.LastSubnet = $LastSubnet
+  }
+
+  function Get-IPs {
 
     [cmdletbinding()]
     Param(
+
         [Parameter(Mandatory = $True,
                    Position =0,
                    ValueFromPipeline = $True,
                    ValueFromPipelineByPropertyName = $True,
-                   HelpMessage ="Enter the first IP in the range(s).")]
+                   HelpMessage ="Specify the first IP in the range(s).")]
         [Alias('Start')]
         [String] $StartIP,
 
@@ -15,10 +40,6 @@ function Get-IPs {
                    HelpMessage ="Enter the last IP in the range(s).")]
         [Alias('End')]
         [String] $EndIP
-
-        [Parameter(Mandatory = $False
-                  HelpMessage ="Enter the first three octets in the first subnet.")]
-        $          
     )
     [Int]$BitCount = 0
     [String]$Subnet
@@ -52,7 +73,7 @@ function Get-IPs {
             }
         }
 
-   [String[]] $IPrange = "$($Subnet) $($StartLastBit..$EndLastBit)"
+   $IPrange = "$($Subnet) $($StartLastBit..$EndLastBit)"
 
    foreach($IP in $IPrange) {
        Test-Connection $IP -Count 1 -Quiet | Where-Object {$_ -EQ "True"}
