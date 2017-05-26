@@ -80,15 +80,14 @@ function Get-IPs {
         $StartLastBit++
    }
 
-   $IPQueue.Dequeue()
 
-   <###############################################-Multithreader Function-#####################################################
+   ###############################################-Multithreader Function-#####################################################
    function Multithreader(){
 
         BEGIN{
             $SessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
             $SessionState.Variables.Add(
-            (New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry('IPRange', $IPRange, 'Range of IP addresses')))
+            (New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry('IPRange', $IPQueue, 'Range of IP addresses')))
 
             $RunspacePool = [RunspaceFactory]::CreateRunspacePool(1, 20, $SessionState, $Host)
             $RunspacePool.BeginOpen()
@@ -100,7 +99,13 @@ function Get-IPs {
         }
 
         PROCESS{
-            $Controller.AddScript({Scan-Network})
+            $Controller.AddScript({
+                   if($IPQueue.GetEnumerator() -NE 0 -And $IPQueue.GetEnumerator() -GT 19){
+                        for([Int]$i = 0; $i -LT 20; $i++){
+                            $i | % $Thread$_
+                }
+                
+            })
         }
    }
 
@@ -110,12 +115,12 @@ function Get-IPs {
 
 
 
-   #############################################-End Multithreader-############################################################>
+   #############################################-End Multithreader-############################################################
 
    #Iterates through each IP in the array and runs Test-Connection against them.
 
 
-   <#function Scan-Network {
+   function Scan-Network {
 
    foreach($IP in $IPRange){
 
@@ -133,5 +138,5 @@ function Get-IPs {
           }
         }
     }
-    Scan-Network#>
+    Scan-Network
 }
