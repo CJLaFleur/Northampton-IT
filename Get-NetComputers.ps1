@@ -1,5 +1,5 @@
-function Get-IPs {
-    #Parameters
+﻿function Get-NetComputers {
+
     [cmdletbinding()]
     Param(
 
@@ -15,20 +15,25 @@ function Get-IPs {
                    Position =1,
                    HelpMessage ="Enter the last IP in the range(s).")]
         [Alias('End')]
-        [String]$EndIP
-)
+        [String]$EndIP,
 
-    #Non-parameter variables
+        [Parameter(Mandatory = $False,
+                  HelpMessage ="Enter the subnets you want to scan.")]
+
+        #This is an array of strings intended to store as many subnets as the user wishes. It is named Multiple so it is clear as a parameter.
+        [String[]]$Multiple
+    )
+
     [Int]$Count = 0
     [Int]$BitCount = 0
     [String]$Subnet
     [int]$StartLastBit
     [int]$EndLastBit
     $IPQueue = New-Object System.Collections.Queue
+    $ComputerInfo = @()
 
     Clear-Host
 
-    #Parse First IP Address
     for([Int]$i = 0; $i -LT $StartIP.Length; $i++){
         if($StartIP[$i] -EQ "."){
            $BitCount++
@@ -43,7 +48,6 @@ function Get-IPs {
         }
     }
 
-    #Parse end IP Address
     for([Int]$j = 0; $j -LT $EndIP.Length; $j++){
         if($EndIP[$j] -EQ "."){
            $BitCount++
@@ -57,7 +61,6 @@ function Get-IPs {
         }
     }
 
-    #Trims $Subnet down to three octets
     for([Int]$k = 0; $k -LT $Subnet.Length; $k++){
         if($Subnet[$k] -EQ "."){
            $BitCount++
@@ -70,57 +73,30 @@ function Get-IPs {
         }
     }
 
-   #Initializes the array of the range of IPs.
    while($StartLastBit -LE $EndLastBit){
         [String]$Temp = $Subnet + $StartLastBit
         $IPQueue.Enqueue($Temp)
         $StartLastBit++
    }
 
+   function Multithreader{
 
-   ###############################################-Multithreader Function-#####################################################
-   function Multithreader(){
+    $RunspacePool = [RunspaceFactory]::CreateRunspacePool(1,20)
+    $RunspacePool.Open()
 
-        BEGIN{
-            $SessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
-            $SessionState.Variables.Add(
-            (New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry('IPRange', $IPQueue, 'Range of IP addresses')))
+    $Count = $IPQueue.Count
 
-            $RunspacePool = [RunspaceFactory]::CreateRunspacePool(1, 20, $SessionState, $Host)
-            $RunspacePool.BeginOpen()
-
-            $Controller = [PowerShell]::Create()
-            $Controller.RunspacePool = $RunspacePool
-
-
-        }
-
-        PROCESS{
-            $Controller.AddScript({
-                   if($IPQueue.GetEnumerator() -NE 0 -And $IPQueue.GetEnumerator() -GT 19){
-                        for([Int]$i = 0; $i -LT 20; $i++){
-                            $i | % $Thread$_
-                }
-                
-            })
-        }
-   }
+    for($i = 0; $i -LT $Count; $i++){
+        $Job = [powershell]::Create()
+        $Job.RunspacePool = $RunspacePool
+        $Job.AddScript({Get-ComputerInfo})
+        $Job.BeginInvoke()
+    }
+  }
 
 
-
-
-
-
-
-   #############################################-End Multithreader-############################################################
-
-   #Iterates through each IP in the array and runs Test-Connection against them.
-
-
-   function Scan-Network {
-
-   foreach($IP in $IPRange){
-
+   function Get-ComputerInfo {
+        $IP = $IPQueue.Dequeue()
           [Bool]$IsConnected = Test-Connection $IP -Count 1 -Quiet -BufferSize 1 -TimeToLive 1 | Where-Object {$_ -EQ "True"}
 
           if($IsConnected -EQ "True"){
@@ -130,12 +106,11 @@ function Get-IPs {
                           Status = 'Connected'
                           }
           $IPData = New-Object -TypeName PSObject -Property $Properties
-          Write-Output $IPData | FL
+          $ComputerInfo += $IPData
+          return $ComputerInfo | FL
           }
           else{
             Start-Sleep -Milliseconds 1
           }
         }
-    }
-    Scan-Network
 }
