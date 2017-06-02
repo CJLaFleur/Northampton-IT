@@ -1,4 +1,4 @@
-function Get-IPs {
+function Get-NetComputers {
 
     [cmdletbinding()]
     Param(
@@ -15,14 +15,9 @@ function Get-IPs {
                    Position =1,
                    HelpMessage ="Enter the last IP in the range(s).")]
         [Alias('End')]
-        [String]$EndIP,
-
-        [Parameter(Mandatory = $False,
-                  HelpMessage ="Enter the subnets you want to scan.")]
-
-        #This is an array of strings intended to store as many subnets as the user wishes. It is named Multiple so it is clear as a parameter.
-        [String[]]$Multiple
+        [String]$EndIP
     )
+
     [Int]$Count = 0
     [Int]$BitCount = 0
     [String]$Subnet
@@ -70,18 +65,34 @@ function Get-IPs {
                 break
         }
     }
+   
    while($StartLastBit -LE $EndLastBit){
         $IPRange += @($Subnet + $StartLastBit)
         $StartLastBit++
    }
 
-  foreach($IP in $IPRange){
-          Test-Connection $IP -Count 1 -Quiet | Where-Object {$_ -EQ "True"}
+  function Get-ComputerInfo{ 
+        foreach($IP in $IPRange){
+         [Bool]$IsConnected = Test-Connection $IP -AsJob | Where-Object {$_ -EQ "True"} | Receive-Job
 
-          $Properties = @{IPAddress = $IP
+          if($IsConnected -EQ "True"){
+                try{
+                    $HostN = [System.Net.DNS]::GetHostEntry("$IP")
+                   }
+                catch{
+                    Out-Null
+                     }
+                $Properties = @{IPAddress = $IP
+                          Hostname = $HostN.HostName
                           Status = 'Connected'
                           }
-          $IPData = New-Object -TypeName PSObject -Property $Properties
-          Write-Output $IPData
+                $IPData = New-Object -TypeName PSObject -Property $Properties
+                Write-Output $IPData | FL
         }
+        else{
+            Start-Sleep -Milliseconds 1
+            }
+    }
+  }
+  Get-ComputerInfo
 }
