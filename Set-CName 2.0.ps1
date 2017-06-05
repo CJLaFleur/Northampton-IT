@@ -9,27 +9,33 @@ function Set-CName{
       HelpMessage = "Enter the target computer name.")]
       [Alias('Hostname','CN', 'ComputerName')]
     [String[]]$CName,
+    
     [Parameter(Mandatory = $True,
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the new computer name.")]
       [Alias('NewName')]
       [String[]]$NewCName,
-    [Parameter(Mandatory = $True,
-      HelpMessage = "Enter your username.")]
-      $Username,
 
       [Parameter()]
       [string]$ErrorLogFilePath = $LogFile
   )
 
   BEGIN {
-      Remove-Item -Path $ErrorLogFilePath -Force -EA SilentlyContinue
+      $FileHandle = New-Object System.IO.File
+      $FileHandle.Delete($ErrorLogFilePath)
       $ErrorsHappened = $False
+      
+      $FileHandle.OpenRead("C:\Users\clafleur\New-Computers.txt") | ForEach-Object {
+        $CName += $_
+        $NewCName += $_
+
+      }
+
   }
 
   PROCESS{
 
-  For ($i = 0; $i -lt $CName.Length; $i++){
+  for ($i = 0; $i -lt $CName.Length; $i++){
     try{
         Rename-Computer -ComputerName $CName[$i] -NewName $NewCName[$i] -DomainCredential $Username
         }

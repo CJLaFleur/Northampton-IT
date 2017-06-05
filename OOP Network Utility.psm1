@@ -1,38 +1,26 @@
-﻿function Get-NetComputers {
-
-    [cmdletbinding()]
-    Param(
-
-        [Parameter(Mandatory = $True,
-                   Position =0,
-                   ValueFromPipeline = $True,
-                   ValueFromPipelineByPropertyName = $True,
-                   HelpMessage ="Specify the first IP in the range(s).")]
-        [String]$StartIP,
-
-        [Parameter(Mandatory = $True,
-                   Position =1,
-                   HelpMessage ="Enter the last IP in the range(s).")]
-        [String]$EndIP,
-
-        [Parameter(Mandatory = $False,
-        HelpMessage ="Specify the subnets you wish to scan.")]
-        [Alias('Multiple')]
-        [String[]]$SubnetArray
-        
-    )
+﻿class Network{
 
     [Int]$Count = 0
     [Int]$OctetCount = 0
+    [String]$StartIP
+    [String]$EndIP
     [String]$Subnet
     [int]$StartLastOctet
     [int]$EndLastOctet
-    $IPQueue = New-Object System.Collections.Queue
-    $Ping = New-Object System.Net.Networkinformation.Ping
-    $PingOptions = New-Object System.Net.Networkinformation.PingOptions
-    $PingOptions.PingOptions(.1, $False)
-    $ComputerList = New-Object System.Collections.Generic.List[System.Object]
     
+
+    Network($StartIP, $EndIP){
+        $this.StartIP = $StartIP
+        $this.EndIP = $EndIP
+        $IPQueue = New-Object System.Collections.Queue
+        $Ping = New-Object System.Net.Networkinformation.Ping
+        $PingOptions = New-Object System.Net.Networkinformation.PingOptions
+        $PingOptions.PingOptions(.1, $False)
+        $ComputerList = New-Object System.Collections.Generic.List[System.Object]
+    }
+
+    [Void] GetNetComputers() {
+    [Int]$OctetCount = 0
 
     Clear-Host
 
@@ -75,11 +63,6 @@
                 break
             }
         }
-    }
-
-    else{
-        
-
     }
 
    while($StartLastOctet -LE $EndLastOctet){
@@ -145,4 +128,6 @@
         Get-ComputerInfo
         
         Return $ComputerList
+}
+
 }
