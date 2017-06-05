@@ -15,30 +15,34 @@ function Set-Domain{
     )
 
   BEGIN {
-      $FileHandle = New-Object System.IO.File
+
+      $NewComputerList = New-Object System.Collections.Generic.List[System.Object]
+      <#$FileHandle = New-Object System.IO.File
 
       $FileHandle.Delete("C:\Users\clafleur\set-domain-errors.txt")
       $FileHandle.Delete("C:\Users\clafleur\New-Computers.txt")
 
-      $ErrorsHappened = $False
+      $ErrorsHappened = $False#>
       
       $Creds = Get-Credential
   }
 
   PROCESS{
-
-    foreach ($Computer in $CName){
-       if($Computer -Match 'main.city.northampton.ma.us' -EQ $False){
-          try{
-            Add-Computer -ComputerName $Computer -DomainName main.city.northampton.ma.us -Credential $Creds
-            $FileHandle.AppendAllText("C:\Users\clafleur\New-Computers.txt", $Computer)
-          }
-          catch{
-            Write-Verbose "Couldn't connect to $Computer"
-            $FileHandle.AppendAllText($ErrorLogFilePath, $Computer)
-            $ErrorsHappened = $True
+    
+        foreach ($Computer in $CName){
+            if($Computer -Match 'main.city.northampton.ma.us' -EQ $False){
+                try{
+                    [Bool]$WasAdded = Add-Computer -ComputerName $Computer -DomainName main.city.northampton.ma.us -Credential $Creds
+                    if($WasAdded -EQ $True){
+                        $NewComputerList.Add($Computer)
+                    }
+                }
+                catch{
+                    Write-Verbose "Couldn't connect to $Computer"
+                    $FileHandle.AppendAllText($ErrorLogFilePath, $Computer)
+                    $ErrorsHappened = $True
+                }
             }
-         }
        }
      }
 
