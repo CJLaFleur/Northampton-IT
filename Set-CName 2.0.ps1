@@ -1,54 +1,62 @@
-
-$LogFile = "C:\Users\set-cname-errors.txt"
+$LogPath = "C:\Users\clafleur\Documents\set-cname-errors.txt"
+$NewComputerPath = "C:\Users\clafleur\Documents\New-Computers.txt"
 
 function Set-CName{
   [CmdletBinding()]
   param(
-    [Parameter(Mandatory=$True,
+    [Parameter(Mandatory=$False,
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the target computer name.")]
       [Alias('Hostname','CN', 'ComputerName')]
     [String[]]$CName,
     
-    [Parameter(Mandatory = $True,
+    [Parameter(Mandatory = $False,
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the new computer name.")]
       [Alias('NewName')]
       [String[]]$NewCName,
 
-      [Parameter()]
-      [string]$ErrorLogFilePath = $LogFile
+      [string]$ErrorLogFilePath = $LogPath
   )
 
-  BEGIN {
-      $FileHandle = New-Object System.IO.File
-      $FileHandle.Delete($ErrorLogFilePath)
-      $ErrorsHappened = $False
-      
-      $FileHandle.OpenRead("C:\Users\clafleur\New-Computers.txt") | ForEach-Object {
-        $CName += $_
-        $NewCName += $_
+  
 
+  BEGIN {
+
+      if($NewComputerPath -NE $Null){
+        $FileHandle = New-Object System.IO.StreamReader -Arg $NewComputerPath
       }
 
-  }
+      if($ErrorLogFilePath -NE $Null){
+        $FileHandle = New-Object System.IO.StreamReader -Arg $ErrorLogFilePath
+      }
+  
+      while ($FileHandle.EndOfStream -EQ $False) {
+        $CName += $FileHandle.ReadLine()
+        $NewCName += $FileHandle.ReadLine()
+        }
+        $ErrorsHappened = $False
+      }
+
 
   PROCESS{
 
   for ($i = 0; $i -lt $CName.Length; $i++){
     try{
-        Rename-Computer -ComputerName $CName[$i] -NewName $NewCName[$i] -DomainCredential $Username
+        Rename-Computer -ComputerName $CName[$i] -NewName $NewCName[$i] -DomainCredential $Username -ErrorAction Stop
         }
     catch{
-    $CName[$i] | Out-File $ErrorLogFilePath -Append
-    $ErrorsHappened = $True
+        $CName[$i] | Out-File $ErrorLogFilePath -Append
+        $ErrorsHappened = $True
     }
    }
   
   }
   END {
+      $FileHandle.Dispose()
+      $FileHandle.Close()
       if ($ErrorsHappened) {
-          Write-Verbose "Errors logged to $ErrorLogFilePath."
+          Write-Verbose "The Computers unable to be renamed were logged to $ErrorLogFilePath."
       }
     }
 }

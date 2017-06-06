@@ -22,6 +22,7 @@
         
     )
 
+    BEGIN{
     [Int]$Count = 0
     [Int]$OctetCount = 0
     [String]$Subnet
@@ -29,13 +30,12 @@
     [int]$EndLastOctet
     $IPQueue = New-Object System.Collections.Queue
     $Ping = New-Object System.Net.Networkinformation.Ping
-    $PingOptions = New-Object System.Net.Networkinformation.PingOptions
-    $PingOptions.PingOptions(.1, $False)
     $ComputerList = New-Object System.Collections.Generic.List[System.Object]
-    
 
     Clear-Host
+    }
 
+    PROCESS{
     for([Int]$i = 0; $i -LT $StartIP.Length; $i++){
         if($StartIP[$i] -EQ "."){
            $OctetCount++
@@ -124,7 +124,7 @@
         for([Int]$i = 0; $i -LT $NumIPs; $i++){
           $ComputerInfo = New-Object -TypeName PSObject
           $IP = $IPQueue.Dequeue()
-          $Test = $Ping.Send($IP, 1, .1, $PingOptions)
+          $Test = $Ping.Send($IP, 1, .1)
           if($Test.Status -EQ 'Success'){
             try{
                 $HostN = [System.Net.DNS]::GetHostEntry("$IP")
@@ -142,7 +142,10 @@
           }
         }
       }
+    }
+     END{
         Get-ComputerInfo
         
         Return $ComputerList
+        }
 }
