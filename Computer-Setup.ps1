@@ -19,10 +19,7 @@ function Set-CName{
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the new computer name.")]
       [Alias('NewName')]
-      $NewCName,
-    [Parameter(Mandatory = $True,
-      HelpMessage = "Enter your username.")]
-      $Username
+      $NewCName
   )
   Rename-Computer -ComputerName $env:USERDOMAIN -NewName $NewCName -DomainCredential $Creds
   }

@@ -31,7 +31,9 @@
     $IPQueue = New-Object System.Collections.Queue
     $Ping = New-Object System.Net.Networkinformation.Ping
     $ComputerList = New-Object System.Collections.Generic.List[System.Object]
-
+    $OutPath = "C:\Users\clafleur\Documents\NetComputers.txt"
+    $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
+    $FileHandle.AutoFlush = $True
     
     }
 
@@ -130,6 +132,8 @@
                 $HostN = [System.Net.DNS]::GetHostEntry("$IP")
                 $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
                 $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN.HostName -Force
+
+                $FileHandle.WriteLine($HostN.HostName.ToString())
                 }
                 catch{
                     $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
