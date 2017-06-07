@@ -25,14 +25,14 @@
     BEGIN{
     [Int]$Count = 0
     [Int]$OctetCount = 0
-    [String]$Subnet
-    [int]$StartLastOctet
-    [int]$EndLastOctet
+    [String]$Subnet = $Null
+    [int]$StartLastOctet = $Null
+    [int]$EndLastOctet = $Null
     $IPQueue = New-Object System.Collections.Queue
     $Ping = New-Object System.Net.Networkinformation.Ping
     $ComputerList = New-Object System.Collections.Generic.List[System.Object]
 
-    Clear-Host
+    
     }
 
     PROCESS{
