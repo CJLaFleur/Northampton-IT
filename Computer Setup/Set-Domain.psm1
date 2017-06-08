@@ -1,3 +1,7 @@
+<#
+
+#>
+
 function Set-Domain{
 
   [CmdletBinding()]
@@ -31,9 +35,9 @@ function Set-Domain{
       Remove-Item -Path $NewComputerPath -Force -EA SilentlyContinue
 
       if($Retry.IsPresent -EQ $True){
-        
+
         $FileReader = New-Object System.IO.StreamReader -Arg $ErrorLogPath
-        
+
         while($FileReader.EndOfStream -EQ $False){
             $HostName += $FileReader.ReadLine()
         }
@@ -43,7 +47,7 @@ function Set-Domain{
 
         Remove-Item -Path $ErrorLogPath -Force -EA SilentlyContinue
 
-        $FileHandle = New-Object System.IO.StreamWriter -Arg $NewComputerPath 
+        $FileHandle = New-Object System.IO.StreamWriter -Arg $NewComputerPath
         $ErrorFileHandle = New-Object System.IO.StreamWriter -Arg $ErrorLogPath
 
 
@@ -71,7 +75,7 @@ function Set-Domain{
         }
 
       $ErrorsHappened = $False
-      
+
       $Creds = Get-Credential
   }
 
@@ -79,7 +83,7 @@ function Set-Domain{
           foreach ($Computer in $HostName){
                 if($Computer -Match 'main.city.northampton.ma.us' -EQ $True){
                   Write-Warning "$Computer is already part of the domain"
-                  $ErrorFileHandle.WriteLine($Computer)        
+                  $ErrorFileHandle.WriteLine($Computer)
                 }
 
                 if($Computer -Match 'main.city.northampton.ma.us' -EQ $False){

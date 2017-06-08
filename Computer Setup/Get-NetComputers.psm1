@@ -1,4 +1,7 @@
-﻿function Get-NetComputers {
+<#
+
+#>
+function Get-NetComputers {
 
     [cmdletbinding()]
     Param(
@@ -19,7 +22,7 @@
         HelpMessage ="Specify the subnets you wish to scan.")]
         [Alias('Multiple')]
         [String[]]$SubnetArray
-        
+
     )
 
     BEGIN{
@@ -35,7 +38,7 @@
     $OutPath = "C:\Users\clafleur\Documents\NetComputers.txt"
     $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
     $FileHandle.AutoFlush = $True
-    
+
     }
 
     PROCESS{
@@ -81,7 +84,7 @@
     }
 
     else{
-        
+
 
     }
 
@@ -92,14 +95,14 @@
    }
 
    <#function Multithreader{
- 
+
     $RunspacePool = [RunspaceFactory]::CreateRunspacePool(1,50)
     $RunspacePool.Open()
- 
+
     $Count = $IPQueue.Count
- 
+
     $Jobs = @()
- 
+
     for($i = 0; $i -LT $Count; $i++){
         $Job = [PowerShell]::Create()
         $Job.RunspacePool = $RunspacePool
@@ -109,21 +112,21 @@
             Handle = $Job.BeginInvoke()
         }
     }
- 
+
     foreach ($Job in $Jobs){
         if($Job.Handle.IsCompleted -EQ $True){
             $Job.Thread.EndInvoke($Job.Handle)
             $Job.Thread.Dispose()
         }
     }
-   
+
     $RunspacePool.Close() | Out-Null
     $RunspacePool.Dispose() | Out-Null
   }#>
 
    function Get-ComputerInfo {
         $NumIPs = $IPQueue.Count
-        
+
         for([Int]$i = 0; $i -LT $NumIPs; $i++){
           $ComputerInfo = New-Object -TypeName PSObject
           $IP = $IPQueue.Dequeue()
@@ -138,8 +141,8 @@
                 }
                 catch{
                     $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
-                    $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value 'HostName could not be resolved' -Force 
-                }               
+                    $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value 'HostName could not be resolved' -Force
+                }
                 $ComputerList.Add($ComputerInfo)
              }
           else{

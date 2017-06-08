@@ -1,3 +1,7 @@
+<#
+
+#>
+
 function Set-CName{
   [CmdletBinding()]
   param(
@@ -6,7 +10,7 @@ function Set-CName{
       HelpMessage = "Enter the target computer name.")]
       [Alias('Hostname','CN', 'ComputerName')]
     [String[]]$CName,
-    
+
     [Parameter(Mandatory = $False,
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the new computer name.")]
@@ -30,15 +34,15 @@ function Set-CName{
       [Switch]$FromText
   )
 
-  
+
 
   BEGIN {
-      
+
 
       if($Retry.IsPresent -EQ $True){
-        
+
         $FileReader = New-Object System.IO.StreamReader -Arg $ErrorLogPath
-        
+
         while($FileReader.EndOfStream -EQ $False){
             $HostName += $FileReader.ReadLine()
         }
@@ -47,7 +51,7 @@ function Set-CName{
         $FileReader.Close()
 
         Remove-Item -Path $ErrorLogPath -Force -EA SilentlyContinue
- 
+
         $ErrorFileHandle = New-Object System.IO.StreamWriter -Arg $ErrorLogPath
 
 
@@ -57,7 +61,7 @@ function Set-CName{
       elseif($FromText.IsPresent -EQ $True){
 
         $FileReader = New-Object System.IO.StreamReader -Arg $NewComputerPath
-        
+
         while($FileReader.EndOfStream -EQ $False){
             $HostName += $FileReader.ReadLine()
             }
@@ -76,7 +80,7 @@ function Set-CName{
         }
 
       $ErrorsHappened = $False
-      
+
       $Creds = Get-Credential
       }
 
@@ -92,7 +96,7 @@ function Set-CName{
         $ErrorsHappened = $True
     }
    }
-  
+
   }
   END {
       $FileHandle.Dispose()
@@ -102,4 +106,3 @@ function Set-CName{
       }
     }
 }
-
