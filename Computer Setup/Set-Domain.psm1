@@ -1,5 +1,18 @@
 <#
+.Synopsis
+This function adds computers to a domain.
 
+.Description
+This function batch adds computers to a domain. It can accept pipeline input and is intended to be used
+in conjunction with Get-NetComputers. It can also accept input from a text file, and automatically
+retry adding failed computers from an error log.
+
+This should be run as an administrator as it requires permission to save files to the root directory
+of the hard drive.
+
+.Notes
+Author: Connor James LaFleur
+Copyright: Connor James LaFleur, 6/8/17 2:17PM Eastern Time
 #>
 
 function Set-Domain{
@@ -11,6 +24,10 @@ function Set-Domain{
       ValueFromPipelineByPropertyName=$True,
       HelpMessage= "Enter the target computer name.")]
     [String[]]$HostName,
+
+    [Parameter(Mandatory=$True,
+      HelpMessage= "Enter the domain you are trying to add computers to.")]
+      [String]$Domain,
 
     [Parameter(Mandatory =$True,
       HelpMessage ="Enter the path to write the error log to.")]
@@ -81,14 +98,14 @@ function Set-Domain{
 
   PROCESS{
           foreach ($Computer in $HostName){
-                if($Computer -Match 'main.city.northampton.ma.us' -EQ $True){
+                if($Computer -Match $Domain -EQ $True){
                   Write-Warning "$Computer is already part of the domain"
                   $ErrorFileHandle.WriteLine($Computer)
                 }
 
-                if($Computer -Match 'main.city.northampton.ma.us' -EQ $False){
+                if($Computer -Match $Domain -EQ $False){
                     try{
-                        Add-Computer -ComputerName $Computer -DomainName main.city.northampton.ma.us -Credential $Creds -ErrorAction Stop
+                        Add-Computer -ComputerName $Computer -DomainName $Domain -Credential $Creds -ErrorAction Stop
                         $FileHandle.WriteLine($Computer)
                         $FileHandle.WriteLine()
                         }

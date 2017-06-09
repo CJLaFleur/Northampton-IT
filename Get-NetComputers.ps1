@@ -5,12 +5,10 @@
 
         [Parameter(Mandatory = $True,
                    Position =0,
-                   ValueFromPipeline = $True,
-                   ValueFromPipelineByPropertyName = $True,
                    HelpMessage ="Specify the first IP in the range(s).")]
         [String]$StartIP,
 
-        [Parameter(Mandatory = $True,
+        [Parameter(Mandatory = $False,
                    Position =1,
                    HelpMessage ="Enter the last IP in the range(s).")]
         [String]$EndIP,
@@ -18,7 +16,11 @@
         [Parameter(Mandatory = $False,
         HelpMessage ="Specify the subnets you wish to scan.")]
         [Alias('Multiple')]
-        [String[]]$SubnetArray
+        [String[]]$SubnetArray,
+
+        [Parameter(Mandatory = $False,
+        HelpMessage ="Set this if you wish to output the results of the scan to a text file.")]
+        [Switch]$OutText
         
     )
 
@@ -28,17 +30,20 @@
     [String]$Subnet = $Null
     [int]$StartLastOctet = $Null
     [int]$EndLastOctet = $Null
-    $HostNames
+    [Int]$SubnetCount = 0
     $IPQueue = New-Object System.Collections.Queue
     $Ping = New-Object System.Net.Networkinformation.Ping
     $ComputerList = New-Object System.Collections.Generic.List[System.Object]
+    if($OutText){
     $OutPath = "C:\Users\clafleur\Documents\NetComputers.txt"
     $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
     $FileHandle.AutoFlush = $True
-    
+        }
     }
 
     PROCESS{
+
+    if($SubnetArray -EQ $Null){
     for([Int]$i = 0; $i -LT $StartIP.Length; $i++){
         if($StartIP[$i] -EQ "."){
            $OctetCount++
@@ -66,7 +71,7 @@
         }
     }
 
-    if($SubnetArray -EQ $Null){
+    
         for([Int]$k = 0; $k -LT $Subnet.Length; $k++){
             if($Subnet[$k] -EQ "."){
            $OctetCount++
@@ -78,18 +83,32 @@
                 break
             }
         }
-    }
+   
+        while($StartLastOctet -LE $EndLastOctet){
+            [String]$Temp = $Subnet + $StartLastOctet
+            $IPQueue.Enqueue($Temp)
+            $StartLastOctet++
+        }
+     }
 
-    else{
-        
+     if($SubnetArray -NE $Null){
 
-    }
+        $StartLastOctet = $StartIP
+        $EndLastOctet = $EndIP
+        $TempOctet = $StartLastOctet
 
-   while($StartLastOctet -LE $EndLastOctet){
-        [String]$Temp = $Subnet + $StartLastOctet
-        $IPQueue.Enqueue($Temp)
-        $StartLastOctet++
-   }
+        while($SubnetCount -LT $SubnetArray.Count){
+            [String]$Temp = $SubnetArray[$SubnetCount] + "." + $StartLastOctet
+            $IPQueue.Enqueue($Temp)
+            $StartLastOctet++
+            if($StartLastOctet -EQ $EndLastOctet){
+                [String]$Temp = $SubnetArray[$SubnetCount] + "." + $StartLastOctet
+                $IPQueue.Enqueue($Temp)
+                $SubnetCount++
+                $StartLastOctet = $TempOctet
+                }
+        }
+     }
 
    <#function Multithreader{
  
@@ -134,7 +153,9 @@
                 $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
                 $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN.HostName -Force
 
+                if($OutText){
                 $FileHandle.WriteLine($HostN.HostName.ToString())
+                    }
                 }
                 catch{
                     $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force

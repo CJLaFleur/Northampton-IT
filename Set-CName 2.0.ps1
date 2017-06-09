@@ -88,7 +88,9 @@ function Set-CName{
         Rename-Computer -ComputerName $CName[$i] -NewName $NewCName[$i] -DomainCredential $Username -ErrorAction Stop
         }
     catch{
-        $CName[$i] | Out-File $ErrorLogFilePath -Append
+        Write-Warning "Couldn't rename " + $CName[$i] + " to " + $NewCName[$i]
+        $ErrorFileHandle.WriteLine($CName[$i])
+        $ErrorFileHandle.WriteLine($NewCName[$i])
         $ErrorsHappened = $True
     }
    }

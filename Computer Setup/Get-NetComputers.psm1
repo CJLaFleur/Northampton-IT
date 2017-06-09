@@ -1,11 +1,28 @@
 <#
+.Synopsis
+This function adds computers to a domain.
 
+.Description
+This function scans subnets for active IP Addresses, and resolves them to their HostNames.
+It returns a List object containing the IPs and HostNames
+
+.Parameter Multiple
+This parameter allows for a user to specify multiple subnets to scan.
+Type each subnet in the form of x.x.x where x represents an octet in an IP.
+When using this, instead of specifying full IPs in the first two positions as if scanning in a single
+subnet, specify only the final octet range you want to use, and then the subnets following this
+parameter. When using this parameter, each individual input must be surrounded in quotes, and
+subnets should be entered in a comma-separated list.
+
+.Notes
+Author: Connor James LaFleur
+Copyright: Connor James LaFleur, 6/8/17 2:31PM Eastern Time
 #>
+
 function Get-NetComputers {
 
     [cmdletbinding()]
     Param(
-
         [Parameter(Mandatory = $True,
                    Position =0,
                    ValueFromPipeline = $True,
