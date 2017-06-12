@@ -4,7 +4,7 @@ function Set-CName{
     [Parameter(Mandatory=$False,
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the target computer name.")]
-      [Alias('Hostname','CN', 'ComputerName')]
+      [Alias('HostName','CN', 'ComputerName')]
     [String[]]$CName,
     
     [Parameter(Mandatory = $False,

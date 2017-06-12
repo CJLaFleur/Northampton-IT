@@ -33,21 +33,21 @@
 
     PROCESS{
         foreach($CN in $CName){
-            $AccountInfo = New-Object -TypeName PSObject
             
             if($CN -NotMatch "HostName"){
 
-                $Results = Get-CimInstance win32_useraccount -ComputerName $CN |
+                $Results = Get-WMIObject -Class win32_useraccount -ComputerName $CN -Namespace "root\cimv2" -Filter "LocalAccount='$True'" |
                 Where-Object {$_.Name -EQ "MIS" -OR $_.Name -EQ "Localadmin"} |
                 Select-Object -Property "Name", "Disabled"
-            
-                $AccountInfo | Add-Member -MemberType NoteProperty -Name ComputerName -Value $CN
-                $AccountInfo | Add-Member -MemberType NoteProperty -Name AccountName -Value $Results.Name
-                $AccountInfo | Add-Member -MemberType NoteProperty -Name Disabled -Value $Results.Disabled
 
-                $AccountList.Add($AccountInfo)
+                    $AccountInfo = New-Object -TypeName PSObject
+                    $AccountInfo | Add-Member -MemberType NoteProperty -Name ComputerName -Value $CN
+                    $AccountInfo | Add-Member -MemberType NoteProperty -Name AccountName -Value $Results.Name -Force
+                    $AccountInfo | Add-Member -MemberType NoteProperty -Name Disabled -Value $Results.Disabled -Force
 
-                Export-Csv -Path $OutPath -InputObject $AccountInfo -NoTypeInformation -Append
+                    $AccountList.Add($AccountInfo)
+                    
+                #Export-Csv -Path $OutPath -InputObject $AccountInfo -NoTypeInformation -Append
             }
             
 
@@ -69,4 +69,7 @@
         return $AccountList
     }
 
+
 }
+
+
