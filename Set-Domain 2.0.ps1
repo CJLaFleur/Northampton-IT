@@ -8,11 +8,11 @@ function Set-Domain{
       HelpMessage= "Enter the target computer name.")]
     [String[]]$HostName,
 
-    [Parameter(Mandatory = $False,
+    [Parameter(Mandatory =$True,
       HelpMessage ="Enter the path to write the error log to.")]
       [String]$ErrorLogPath = "C:\set-cname-errors.txt",
 
-    [Parameter(Mandatory = $false,
+    [Parameter(Mandatory =$True,
       HelpMessage ="Enter the path to write the successfully added computers to.")]
       [String]$NewComputerPath = "C:\New-Computers.txt",
 
@@ -51,11 +51,10 @@ function Set-Domain{
         $ErrorFileHandle.AutoFlush = $True
       }
       elseif($FromScan.IsPresent -EQ $True){
-
+        
         Select-Object -Property HostName | foreach{
-            $HostName += $_
-        }
-
+                $HostName += $_
+                }
         $FileHandle = New-Object System.IO.StreamWriter -Arg $NewComputerPath
         $ErrorFileHandle = New-Object System.IO.StreamWriter -Arg $ErrorLogPath
 

@@ -8,34 +8,52 @@ param(
       [Alias('Hostname','CN', 'ComputerName')]
     [String[]]$CName,
 
+    [Parameter(Mandatory =$False,
+      HelpMessage ="Enter the path to write the error log to.")]
+      [String]$ErrorLogPath = "C:\New-Account-Errors.txt",
+
+    [Parameter(Mandatory =$False,
+      HelpMessage ="Enter the path to write the successfully added computers to.")]
+      [String]$OutPath = "C:\New-Accounts.CSV",
+
     [Parameter(Mandatory=$False,
-           Position = 1,
-      ValueFromPipelineByPropertyName=$True,
-      HelpMessage = "Enter the target accounts to disable. Can be multiple accounts.")]
-      [Alias('AccountName')]
-    [String[]]$Usernames
+    HelpMessage ="Set this to attempt to add failed additions from the last attempt.")]
+    [Switch]$Retry
     )
 
     BEGIN{
-        $Computer = @()
         $Username = "SU"
-        $Password = ""
+        $Pass = "Jt50PtFtN"
+
+        if($Retry){
+            
+        }
     }
 
     PROCESS{
         foreach($CN in $CName){
-                    $Computer += [ADSI]"WinNT://$CN"
-                    $Test = ([ADSI]"WinNT://$env:computername/Administrators,group").Add("WinNT://$env:computername/User")
-            }
-
-        foreach($Comp in $Computer){
-            foreach($User in $Usernames){
-                $Comp.Delete("User", $User)
+            if($CN -NotMatch "HostName"){
+                try{
+                    $User = [ADSI]"WinNT://$CN"
+                    $UserObj = $User.Create("User", $Username)
+                    $UserObj.SetPassword($Pass)
+                    $UserObj.SetInfo()
+                    $AdminObj = [ADSI]"WinNT://$CN/Administrators"
+                    $AdminObj.Add("WinNT://$CN/$Username")
+                    Out-File -Path $OutPath -InputObject $CN -NoTypeInformation -Append
+                    }
+                
+                catch{
+                    Write-Warning "Failed to create a local admin account on $CN. Errors logged to $ErrorPath"
+                    
+                }
             }
         }
+
+
     }
 
     END{
-        return $Account
+        
     }
 }

@@ -22,16 +22,17 @@
     #$FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
     #$FileHandle.AutoFlush = $True
 
-        if($FromScan){
-            Select-Object -Property HostName | foreach{
-                $CName += $_
-            }
-        }
+        
 
 
     }
 
     PROCESS{
+        
+        if($_ -NE $Null){
+            $CName += $_
+        }
+
         foreach($CN in $CName){
             
             if($CN -NotMatch "HostName"){
@@ -47,7 +48,7 @@
 
                     $AccountList.Add($AccountInfo)
                     
-                #Export-Csv -Path $OutPath -InputObject $AccountInfo -NoTypeInformation -Append
+                Export-Csv -Path $OutPath -InputObject $AccountInfo -NoTypeInformation -Append
             }
             
 

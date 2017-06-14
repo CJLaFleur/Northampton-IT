@@ -150,8 +150,17 @@
           if($Test.Status -EQ 'Success'){
             try{
                 $HostN = [System.Net.DNS]::GetHostEntry("$IP")
+                $HostN = $HostN.HostName
+                for([Int]$i = 0; $i -LT $HostN.Length; $i++){
+                    if($HostN[$i] -EQ "."){
+                        [String] $Temp = $HostN.Substring(0, $i)
+                        $HostN = $Temp
+                        break
+                    }
+                }
+
                 $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
-                $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN.HostName -Force
+                $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN -Force
 
                 if($OutText){
                 $FileHandle.WriteLine($HostN.HostName.ToString())
