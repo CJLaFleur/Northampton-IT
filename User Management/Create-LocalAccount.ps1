@@ -1,4 +1,4 @@
-﻿function Create-LocalAccount{
+function Create-LocalAccount{
 [Cmdletbinding()]
 param(
 [Parameter(Mandatory=$False,
@@ -8,52 +8,41 @@ param(
       [Alias('Hostname','CN', 'ComputerName')]
     [String[]]$CName,
 
-    [Parameter(Mandatory =$False,
-      HelpMessage ="Enter the path to write the error log to.")]
-      [String]$ErrorLogPath = "C:\New-Account-Errors.txt",
-
-    [Parameter(Mandatory =$False,
-      HelpMessage ="Enter the path to write the successfully added computers to.")]
-      [String]$OutPath = "C:\New-Accounts.CSV",
-
     [Parameter(Mandatory=$False,
-    HelpMessage ="Set this to attempt to add failed additions from the last attempt.")]
-    [Switch]$Retry
+           Position = 1,
+      ValueFromPipelineByPropertyName=$True,
+      HelpMessage = "Enter the target accounts to disable. Can be multiple accounts.")]
+      [Alias('AccountName')]
+    [String[]]$Usernames
     )
 
     BEGIN{
+        $OutPath = "C:\NetLocalAccounts.CSV"
+        Remove-Item -Path $OutPath -Force -EA SilentlyContinue
         $Username = "SU"
-        $Pass = "Jt50PtFtN"
+        $Password = "Jt50PtFtN"
 
-        if($Retry){
-            
-        }
+        $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
+        $FileHandle.AutoFlush = $True
     }
 
     PROCESS{
         foreach($CN in $CName){
-            if($CN -NotMatch "HostName"){
-                try{
-                    $User = [ADSI]"WinNT://$CN"
-                    $UserObj = $User.Create("User", $Username)
-                    $UserObj.SetPassword($Pass)
-                    $UserObj.SetInfo()
+            try{
+                    $Computer = [ADSI]"WinNT://$CN"
+                    $CompObj = $Computer.Create("User", $Username)
+                    $CompObj.SetPassword($Password)
+                    $CompObj.SetInfo()
                     $AdminObj = [ADSI]"WinNT://$CN/Administrators"
-                    $AdminObj.Add("WinNT://$CN/$Username")
-                    Out-File -Path $OutPath -InputObject $CN -NoTypeInformation -Append
-                    }
-                
+                    $AdminObj.Add("WinNT://$CN/Test")
+                }
                 catch{
-                    Write-Warning "Failed to create a local admin account on $CN. Errors logged to $ErrorPath"
-                    
+                     Export-Csv -Path $OutPath -InputObject $AccountInfo -NoTypeInformation -Append
                 }
             }
-        }
-
-
     }
 
     END{
-        
+
     }
 }

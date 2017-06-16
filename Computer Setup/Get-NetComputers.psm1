@@ -171,11 +171,21 @@ function Get-NetComputers {
           if($Test.Status -EQ 'Success'){
             try{
                 $HostN = [System.Net.DNS]::GetHostEntry("$IP")
+                $HostN = $HostN.HostName
+
+
+                for([Int]$j = 0; $j -LT $HostN.Length; $j++){
+                    if($HostN[$j] -EQ "."){
+                        [String] $Temp = $HostN.Substring(0, $j)
+                        $HostN = $Temp
+                    }
+                }
+
                 $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
-                $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN.HostName -Force
+                $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN -Force
 
                 if($OutText){
-                $FileHandle.WriteLine($HostN.HostName.ToString())
+                $FileHandle.WriteLine($HostN)
                     }
                 }
                 catch{

@@ -1,4 +1,4 @@
-﻿function Delete-LocalAccount{
+﻿function Disable-LocalAccount{
 [Cmdletbinding()]
 param(
 [Parameter(Mandatory=$False,
@@ -17,25 +17,21 @@ param(
     )
 
     BEGIN{
-        $Computer = @()
-
-        $OutPath = "C:\DeletedLocalAccounts.CSV"
-        Remove-Item -Path $OutPath -Force -EA SilentlyContinue
-
-        $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
-        $FileHandle.AutoFlush = $True
-
+        $Account = @()
+        $DisableUser = 2
     }
 
     PROCESS{
         foreach($CN in $CName){
-              $Computer = [ADSI]"WinNT://$CN"
-              foreach($User in $Usernames){
-                $Computer.Delete("User", $User)
-
-                $Line = "$CN, " + $User
-                $FileHandle.WriteLine($Line)
+            foreach($User in $Usernames){
+                    $Account += [ADSI]"WinNT://$CN/$User"
             }
+        }
+
+        for([Int]$i = 0; $i -LT $Account.Count; $i++){
+            $Account[$i].SetPassword("admin")
+            $Account[$i].UserFlags = $DisableUser
+            $Account[$i].SetInfo()
         }
     }
 
