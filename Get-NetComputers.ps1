@@ -20,7 +20,7 @@
 
         [Parameter(Mandatory = $False,
         HelpMessage ="Set this if you wish to output the results of the scan to a text file.")]
-        [Switch]$OutText
+        [Switch]$OutCSV
         
     )
 
@@ -34,10 +34,11 @@
     $IPQueue = New-Object System.Collections.Queue
     $Ping = New-Object System.Net.Networkinformation.Ping
     $ComputerList = New-Object System.Collections.Generic.List[System.Object]
-    if($OutText){
-    $OutPath = "C:\Users\clafleur\Documents\NetComputers.txt"
-    $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
-    $FileHandle.AutoFlush = $True
+    if($OutCSV){
+        $OutPath = "C:\Users\clafleur\Documents\NetComputers.csv"
+        Remove-Item -Path $OutPath -Force -EA SilentlyContinue
+        $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
+        $FileHandle.AutoFlush = $True
         }
     }
 
@@ -163,8 +164,8 @@
                 $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
                 $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value $HostN -Force
 
-                if($OutText){
-                $FileHandle.WriteLine($HostN)
+                if($OutCSV){
+                $FileHandle.WriteLine("$IP, $HostN")
                     }
                 }
                 catch{
@@ -181,6 +182,11 @@
     }
      END{
         Get-ComputerInfo
+        if($OutCSV){
+            $FileHandle.Flush()
+            $FileHandle.Dispose()
+            $FileHandle.Close()
+        }
         return $ComputerList
         }
 }

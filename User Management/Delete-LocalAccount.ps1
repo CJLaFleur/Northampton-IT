@@ -17,29 +17,43 @@ param(
     )
 
     BEGIN{
-        $Computer = @()
 
-        $OutPath = "C:\DeletedLocalAccounts.CSV"
+        $OutPath = "C:\DeletedLocalAccounts.csv"
+        $ErrorPath = "C:\FailedDeletedLocalAccounts.csv"
         Remove-Item -Path $OutPath -Force -EA SilentlyContinue
+        Remove-Item -Path $ErrorPath -Force -EA SilentlyContinue
 
         $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
         $FileHandle.AutoFlush = $True
+
+        $ErrorFileHandle = New-Object System.IO.StreamWriter -Arg $ErrorPath
+        $ErrorFileHandle.AutoFlush = $True
 
     }
 
     PROCESS{
         foreach($CN in $CName){
-              $Computer = [ADSI]"WinNT://$CN"
-              foreach($User in $Usernames){
-                $Computer.Delete("User", $User)
+            try{
+                if($CN -NotMatch "HostName"){
+                    $Computer = [ADSI]"WinNT://$CN"
+                    foreach($User in $Usernames){
+                        $Computer.Delete("User", $User)
 
-                $Line = "$CN, " + $User
-                $FileHandle.WriteLine($Line)
+                        $Status = "Success"
+                        $Line = "$CN, $User, $Status"
+                        $FileHandle.WriteLine($Line)
+                }
             }
+          }
+          catch{
+            $Status = "Fail"
+            $Line = "$CN, $User, $Status"
+            $ErrorFileHandle.WriteLine($Line)
+          }
         }
     }
 
     END{
-        return $Account
+        
     }
 }

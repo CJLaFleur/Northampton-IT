@@ -5,37 +5,29 @@ param(
            Position = 0,
       ValueFromPipelineByPropertyName=$True,
       HelpMessage = "Enter the target computer name to be targeted. Can be multiple names.")]
-      [Alias('Hostname','CN', 'ComputerName')]
-    [String[]]$CName,
-
-    [Parameter(Mandatory=$False,
-           Position = 1,
-      ValueFromPipelineByPropertyName=$True,
-      HelpMessage = "Enter the target accounts to disable. Can be multiple accounts.")]
-      [Alias('AccountName')]
-    [String[]]$Usernames
+      [Alias('HostName','CN', 'ComputerName')]
+    [String[]]$CName
     )
 
     BEGIN{
-        $Account = @()
-        $DisableUser = 2
+    
     }
 
     PROCESS{
         foreach($CN in $CName){
-            foreach($User in $Usernames){
-                    $Account += [ADSI]"WinNT://$CN/$User"
+            try{
+                $Account = [ADSI]"WinNT://$CN/Administrator"
+                $Account.SetPassword("Admin123")
+                $Account.UserFlags = 2 + 64 + 65536
+                $Account.SetInfo()
             }
-        }
-
-        for([Int]$i = 0; $i -LT $Account.Count; $i++){
-            $Account[$i].SetPassword("admin")
-            $Account[$i].UserFlags = $DisableUser
-            $Account[$i].SetInfo()
+            catch{
+                
+            }
         }
     }
 
     END{
-        return $Account
+       
     }
 }
