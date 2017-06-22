@@ -10,13 +10,20 @@ param(
 
 [Parameter(Mandatory=$False,
            HelpMessage = "Enter the package(s) to be installed.")]
-           [String[]]$Packages
+           [String[]]$Packages,
+
+[Parameter(Mandatory=$False,
+           HelpMessage = "Set this flag to output the status of each attempt to a CSV file.")]
+           [Switch]$OutCSV
            )
 
     BEGIN{
-        $OutPath = "C:\SoftwareInstallation.csv"
-        $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
-        $FileHandle.AutoFlush = $True
+        if($OutCSV){
+            $OutPath = "C:\SoftwareInstallation.csv"
+            $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
+            $FileHandle.AutoFlush = $True
+
+        }
 
         $Cred = Get-Credential
 
@@ -30,12 +37,16 @@ param(
         foreach($CN in $CName){
             foreach($PKG in $Packages){
                 try{
-                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $PKG -y} -Credential $Cred -AsJob
+                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y} -ArgumentList $PKG -Credential $Cred -AsJob
                     
-                    $FileHandle.WriteLine("$CN, $PKG, Success")
+                    if($OutCSV){
+                        $FileHandle.WriteLine("$CN, $PKG, Success")
                     }
+                }
                 catch{
-                    $FileHandle.WriteLine("$CN, $PKG, Fail")
+                    if($OutCSV){
+                        $FileHandle.WriteLine("$CN, $PKG, Fail")
+                    }
                 }
             }
         }
@@ -50,8 +61,10 @@ param(
     }
 
     END{
-        $FileHandle.Flush()
-        $FileHandle.Dispose()
-        $FileHandle.Close()
+        if($OutCSV){
+            $FileHandle.Flush()
+            $FileHandle.Dispose()
+            $FileHandle.Close()
+        }
     }
 }
