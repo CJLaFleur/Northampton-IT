@@ -21,7 +21,7 @@
         [Parameter(Mandatory = $False,
         HelpMessage ="Set this if you wish to output the results of the scan to a text file.")]
         [Switch]$OutCSV
-        
+
     )
 
     BEGIN{
@@ -72,7 +72,7 @@
         }
     }
 
-    
+
         for([Int]$k = 0; $k -LT $Subnet.Length; $k++){
             if($Subnet[$k] -EQ "."){
            $OctetCount++
@@ -84,7 +84,7 @@
                 break
             }
         }
-   
+
         while($StartLastOctet -LE $EndLastOctet){
             [String]$Temp = $Subnet + $StartLastOctet
             $IPQueue.Enqueue($Temp)
@@ -112,14 +112,14 @@
      }
 
    <#function Multithreader{
- 
+
     $RunspacePool = [RunspaceFactory]::CreateRunspacePool(1,50)
     $RunspacePool.Open()
- 
+
     $Count = $IPQueue.Count
- 
+
     $Jobs = @()
- 
+
     for($i = 0; $i -LT $Count; $i++){
         $Job = [PowerShell]::Create()
         $Job.RunspacePool = $RunspacePool
@@ -129,21 +129,21 @@
             Handle = $Job.BeginInvoke()
         }
     }
- 
+
     foreach ($Job in $Jobs){
         if($Job.Handle.IsCompleted -EQ $True){
             $Job.Thread.EndInvoke($Job.Handle)
             $Job.Thread.Dispose()
         }
     }
-   
+
     $RunspacePool.Close() | Out-Null
     $RunspacePool.Dispose() | Out-Null
   }#>
 
    function Get-ComputerInfo {
         $NumIPs = $IPQueue.Count
-        
+
         for([Int]$i = 0; $i -LT $NumIPs; $i++){
           $ComputerInfo = New-Object -TypeName PSObject
           $IP = $IPQueue.Dequeue()
@@ -153,7 +153,7 @@
                 $HostN = [System.Net.DNS]::GetHostEntry("$IP")
                 $HostN = $HostN.HostName
 
-          
+
                 for([Int]$j = 0; $j -LT $HostN.Length; $j++){
                     if($HostN[$j] -EQ "."){
                         [String] $Temp = $HostN.Substring(0, $j)
@@ -170,8 +170,8 @@
                 }
                 catch{
                     $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
-                    $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value 'HostName could not be resolved' -Force 
-                }               
+                    $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value 'HostName could not be resolved' -Force
+                }
                 $ComputerList.Add($ComputerInfo)
              }
           else{

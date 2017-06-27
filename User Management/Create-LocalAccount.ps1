@@ -23,7 +23,6 @@ param(
         Remove-Item -Path $OutPath -Force -EA SilentlyContinue
         Remove-Item -Path $ErrorPath -Force -EA SilentlyContinue
         
-        ConvertTo-SecureString -String $Password
 
         $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
         $FileHandle.AutoFlush = $True

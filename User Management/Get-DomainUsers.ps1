@@ -25,8 +25,8 @@ function Get-LocalAdmin{
 
             if($CN -NotMatch "HostName"){
                try{
-                $Results = Get-CIMInstance -Class win32_useraccount -ComputerName $CN -Namespace "root\cimv2" -Filter "LocalAccount='$True'" |
-                Where-Object {$_.Name -EQ "MIS" -OR $_.Name -EQ "Localadmin"} |
+                $Results = Get-CIMInstance -Class win32_useraccount -ComputerName $CN -Namespace "root\cimv2" -Filter "LocalAccount='$False'" |
+                #Where-Object {$_.Name -EQ "MIS" -OR $_.Name -EQ "Localadmin"} |
                 Select-Object -Property "Name", "Disabled"
 
                     $AccountInfo = New-Object -TypeName PSObject
