@@ -8,6 +8,10 @@ param(
            [Alias('HostName','CN', 'ComputerName')]
            [String[]]$CName,
 
+[Parameter(Mandatory = $False,
+           HelpMessage ="Set this if you want to include HostNames that could not be resolved.")]
+           [Switch]$Full,
+
 [Parameter(Mandatory=$False,
            HelpMessage = "Set this flag to output the status of each attempt to a CSV file.")]
            [Switch]$OutCSV
@@ -38,15 +42,18 @@ param(
                 $UserInfo | Add-Member -Type NoteProperty -Name UserName -Value $User -Force
 
                 if($OutCSV){
-                    $FileHandle.WriteLine("$CN, $User")
+                    $FileHandle.WriteLine($CN)
+                    $FileHandle.WriteLine($User)
                 }
             }
             catch{
-                $UserInfo | Add-Member -Type NoteProperty -Name HostName -Value $CN -Force
-                $UserInfo | Add-Member -Type NoteProperty -Name UserName -Value "Username could not be found" -Force
+                if($Full){
+                    $UserInfo | Add-Member -Type NoteProperty -Name HostName -Value $CN -Force
+                    $UserInfo | Add-Member -Type NoteProperty -Name UserName -Value "Username could not be found" -Force
 
-                if($OutCSV){
-                    $FileHandle.WriteLine("$CN, Username could not be found")
+                    if($OutCSV){
+                        $FileHandle.WriteLine("$CN, Username could not be found")
+                    }
                 }
             }
         $UserList.Add($UserInfo)
