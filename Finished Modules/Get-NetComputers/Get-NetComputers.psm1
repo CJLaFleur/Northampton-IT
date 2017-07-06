@@ -1,4 +1,27 @@
-﻿function Get-NetComputers {
+<#
+.Synopsis
+An advanced ping command
+
+.Description
+This script scans subnets for active IP Addresses, and resolves them to their HostNames.
+It returns a List object containing the IPs and HostNames 
+
+.Parameter SubnetArray
+This parameter allows for a user to specify multiple subnets to scan.
+Type each subnet in the form of x.x.x where x represents an octet in an IP.
+When using this, instead of specifying full IPs in the first two positions as if scanning in a single
+subnet, specify only the final octet range you want to use, and then the subnets following this
+parameter. Subnets should be entered in a comma-separated list.
+
+.Parameter Full
+This parameter outputs all active IPs including ones that have unresolved hostnames.
+
+.Notes
+Author: Connor James LaFleur
+Copyright: Connor James LaFleur, 6/8/17 2:31PM Eastern Time
+#>
+
+function Get-NetComputers {
 
     [cmdletbinding()]
     Param(
@@ -19,7 +42,11 @@
         [String[]]$SubnetArray,
 
         [Parameter(Mandatory = $False,
-        HelpMessage ="Set this if you wish to output the results of the scan to a csv file.")]
+        HelpMessage ="Set this if you want to include HostNames that could not be resolved.")]
+        [Switch]$Full,
+
+        [Parameter(Mandatory = $False,
+        HelpMessage ="Set this if you wish to output the results of the scan to a text file.")]
         [Switch]$OutCSV
 
     )
@@ -61,8 +88,8 @@
 
     for([Int]$j = 0; $j -LT $EndIP.Length; $j++){
         if($EndIP[$j] -EQ "."){
-                $OctetCount++
-            }
+           $OctetCount++
+        }
         if ($OctetCount -EQ 3) {
             [String] $Temp = $EndIP.Substring($j)
             $Temp = $Temp.Trim(".")
@@ -71,6 +98,7 @@
                 break
         }
     }
+
 
         for([Int]$k = 0; $k -LT $Subnet.Length; $k++){
             if($Subnet[$k] -EQ "."){
@@ -143,8 +171,6 @@
    function Get-ComputerInfo {
         $NumIPs = $IPQueue.Count
 
-        if($NumIPs -EQ 1){Write-Host 1}
-
         for([Int]$i = 0; $i -LT $NumIPs; $i++){
           $ComputerInfo = New-Object -TypeName PSObject
           $IP = $IPQueue.Dequeue()
@@ -170,10 +196,13 @@
                     }
                 }
                 catch{
-                    $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
-                    $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value 'HostName could not be resolved' -Force
-                    if($OutCSV){
+                    if($Full){
+                        $ComputerInfo | Add-Member -Type NoteProperty -Name IPAddress -Value $IP -Force
+                        $ComputerInfo | Add-Member -Type NoteProperty -Name HostName -Value 'HostName could not be resolved' -Force
+                        
+                        if($OutCSV){
                         $FileHandle.WriteLine($ComputerInfo.IPAddress + ", " + $ComputerInfo.HostName)
+                        }
                     }
                 }
                 $ComputerList.Add($ComputerInfo)

@@ -1,3 +1,20 @@
+<#
+.Synopsis
+This function adds computers to a domain.
+
+.Description
+This function batch adds computers to a domain. It can accept pipeline input and is intended to be used
+in conjunction with Get-NetComputers. It can also accept input from a text file, and automatically
+retry adding failed computers from an error log.
+
+This should be run as an administrator as it requires permission to save files to the root directory
+of the hard drive.
+
+.Notes
+Author: Connor James LaFleur
+Copyright: Connor James LaFleur, 6/8/17 2:17PM Eastern Time
+#>
+
 function Set-Domain{
 
   [CmdletBinding()]
@@ -8,11 +25,11 @@ function Set-Domain{
       HelpMessage= "Enter the target computer name.")]
     [String[]]$HostName,
 
-    [Parameter(Mandatory =$True,
+    [Parameter(Mandatory = $False,
       HelpMessage ="Enter the path to write the error log to.")]
       [String]$ErrorLogPath = "C:\set-cname-errors.txt",
 
-    [Parameter(Mandatory =$True,
+    [Parameter(Mandatory = $false,
       HelpMessage ="Enter the path to write the successfully added computers to.")]
       [String]$NewComputerPath = "C:\New-Computers.txt",
 
@@ -51,10 +68,11 @@ function Set-Domain{
         $ErrorFileHandle.AutoFlush = $True
       }
       elseif($FromScan.IsPresent -EQ $True){
-        
+
         Select-Object -Property HostName | foreach{
-                $HostName += $_
-                }
+            $HostName += $_
+        }
+
         $FileHandle = New-Object System.IO.StreamWriter -Arg $NewComputerPath
         $ErrorFileHandle = New-Object System.IO.StreamWriter -Arg $ErrorLogPath
 

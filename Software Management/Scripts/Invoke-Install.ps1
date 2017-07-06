@@ -37,8 +37,8 @@ param(
         foreach($CN in $CName){
             foreach($PKG in $Packages){
                 try{
-                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y --force} -ArgumentList $PKG -Credential $Cred -AsJob
-                    
+                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y} -ArgumentList $PKG -Credential $Cred -AsJob
+
                     if($OutCSV){
                         $FileHandle.WriteLine("$CN, $PKG, Success")
                     }
@@ -50,7 +50,7 @@ param(
                 }
             }
         }
-        
+
         foreach($Job in $Jobs){
         Get-Job | Wait-Job
 

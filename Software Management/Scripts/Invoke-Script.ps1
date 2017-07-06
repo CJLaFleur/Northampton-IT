@@ -1,4 +1,4 @@
-﻿function Invoke-Install{
+﻿function Invoke-Script{
 [Cmdletbinding()]
 param(
 [Parameter(Mandatory=$False,
@@ -9,8 +9,8 @@ param(
            [String[]]$CName,
 
 [Parameter(Mandatory=$False,
-           HelpMessage = "Enter the package(s) to be installed.")]
-           [String[]]$Packages,
+           HelpMessage = "Enter the script you wish to execute.")]
+           $ScriptBlock,
 
 [Parameter(Mandatory=$False,
            HelpMessage = "Set this flag to output the status of each attempt to a CSV file.")]
@@ -19,10 +19,9 @@ param(
 
     BEGIN{
         if($OutCSV){
-            $OutPath = "C:\SoftwareInstallation.csv"
+            $OutPath = "C:\ScriptRun.csv"
             $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
             $FileHandle.AutoFlush = $True
-
         }
 
         $Cred = Get-Credential
@@ -35,28 +34,26 @@ param(
     PROCESS{
 
         foreach($CN in $CName){
-            foreach($PKG in $Packages){
                 try{
-                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y --force} -ArgumentList $PKG -Credential $Cred -AsJob
+                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock $ScriptBlock -Credential $Cred -AsJob
                     
                     if($OutCSV){
-                        $FileHandle.WriteLine("$CN, $PKG, Success")
+                        $FileHandle.WriteLine("$CN, Success")
                     }
                 }
                 catch{
                     if($OutCSV){
-                        $FileHandle.WriteLine("$CN, $PKG, Fail")
-                    }
+                        $FileHandle.WriteLine("$CN, Fail")
                 }
             }
         }
         
         foreach($Job in $Jobs){
-        Get-Job | Wait-Job
+            Get-Job | Wait-Job
 
-        Get-Job | Receive-Job | Write-Host
+            Get-Job | Receive-Job | Write-Host
 
-        Get-Job | Remove-Job -Force
+            Get-Job | Remove-Job -Force
         }
     }
 

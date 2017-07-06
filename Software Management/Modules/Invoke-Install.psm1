@@ -1,4 +1,4 @@
-﻿function Invoke-Install{
+function Invoke-Install{
 [Cmdletbinding()]
 param(
 [Parameter(Mandatory=$False,
@@ -14,11 +14,7 @@ param(
 
 [Parameter(Mandatory=$False,
            HelpMessage = "Set this flag to output the status of each attempt to a CSV file.")]
-           [Switch]$OutCSV,
-
-[Parameter(Mandatory=$False,
-           HelpMessage = "Set this flag to automatically install software packages based on the department the computer belongs to. This is useful when setting up a computer.")]
-           [Switch]$ByDept
+           [Switch]$OutCSV
            )
 
     BEGIN{
@@ -42,7 +38,7 @@ param(
             foreach($PKG in $Packages){
                 try{
                     $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y} -ArgumentList $PKG -Credential $Cred -AsJob
-                    
+
                     if($OutCSV){
                         $FileHandle.WriteLine("$CN, $PKG, Success")
                     }
@@ -54,7 +50,7 @@ param(
                 }
             }
         }
-        
+
         foreach($Job in $Jobs){
         Get-Job | Wait-Job
 
@@ -71,42 +67,4 @@ param(
             $FileHandle.Close()
         }
     }
-}
-
-function Install-ByDepartment{
-    
-    foreach($CN in $CName){
-
-        $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install firefox --ia -setDefaultBrowser}
-            $Packages = "ar", "av", "googlechrome", "laserfiche", "micollab", "msoffice", "munis"
-            
-            if($CN -Match "MAY-" -OR $CN -Match "BLD-" -OR $CN -Match "CSS-"){
-                $Packages += "vueworks"
-            }
-            
-            if($CN -Match "HDP-" -OR $CN -Match "BLD-" -OR $CN -Match "MAY-" -OR $CN -Match "PLN-" -OR $CN -Match "CLK-"){
-                $Packages += "geotms"
-            }
-             
-            if($CN -Match "MAY-"){
-                
-            }
-
-            foreach($PKG in $Packages){
-                try{
-                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y} -ArgumentList $PKG -Credential $Cred -AsJob
-
-                    
-                    if($OutCSV){
-                        $FileHandle.WriteLine("$CN, $PKG, Success")
-                    }
-                }
-                catch{
-                    if($OutCSV){
-                        $FileHandle.WriteLine("$CN, $PKG, Fail")
-                    }
-                }
-       
-            }
-        }
 }

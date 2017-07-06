@@ -1,25 +1,3 @@
-<#
-.Synopsis
-This function adds computers to a domain.
-
-.Description
-This function batch renames computers. It accepts input from a text file where the user
-should specify the target computer name and new computer name on successive lines.
-This is intended to be used with Set-Domain, which will generate a list of computer names,
-and insert a carriage return where the new name should be entered manually.
-
-Alternatively the names can be specified manually in the shell.
-
-This can also automatically retry adding failed computers from an error log, using the -Retry parameter.
-
-This should be run as an administrator as it requires permission to save files to the root directory
-of the hard drive.
-
-.Notes
-Author: Connor James LaFleur
-Copyright: Connor James LaFleur, 6/8/17 2:54PM Eastern Time
-#>
-
 function Set-CName{
   [CmdletBinding()]
   param(

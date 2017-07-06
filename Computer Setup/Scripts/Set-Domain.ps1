@@ -1,20 +1,3 @@
-<#
-.Synopsis
-This function adds computers to a domain.
-
-.Description
-This function batch adds computers to a domain. It can accept pipeline input and is intended to be used
-in conjunction with Get-NetComputers. It can also accept input from a text file, and automatically
-retry adding failed computers from an error log.
-
-This should be run as an administrator as it requires permission to save files to the root directory
-of the hard drive.
-
-.Notes
-Author: Connor James LaFleur
-Copyright: Connor James LaFleur, 6/8/17 2:17PM Eastern Time
-#>
-
 function Set-Domain{
 
   [CmdletBinding()]

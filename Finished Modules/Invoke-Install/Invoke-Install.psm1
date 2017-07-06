@@ -1,4 +1,17 @@
-﻿function Invoke-Install{
+<#
+.Synopsis
+A wrapper for choco install to install packages remotely and in parallel.
+
+
+.Parameter Package
+The Chocolatey package to be installed. can be multiple packages, entered in a comma-separated list.
+
+.Notes
+Author: Connor James LaFleur
+Copyright: Connor James LaFleur, 7/6/17 9:21AM Eastern Time
+#>
+
+function Invoke-Install{
 [Cmdletbinding()]
 param(
 [Parameter(Mandatory=$False,
@@ -10,7 +23,7 @@ param(
 
 [Parameter(Mandatory=$False,
            HelpMessage = "Enter the package(s) to be installed.")]
-           [String[]]$Packages,
+           [String[]]$Package,
 
 [Parameter(Mandatory=$False,
            HelpMessage = "Set this flag to output the status of each attempt to a CSV file.")]
@@ -37,8 +50,8 @@ param(
         foreach($CN in $CName){
             foreach($PKG in $Packages){
                 try{
-                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y --force} -ArgumentList $PKG -Credential $Cred -AsJob
-                    
+                    $Jobs += Invoke-Command -ComputerName $CN -ScriptBlock {choco install $Args[0] -y} -ArgumentList $PKG -Credential $Cred -AsJob
+
                     if($OutCSV){
                         $FileHandle.WriteLine("$CN, $PKG, Success")
                     }
@@ -50,7 +63,7 @@ param(
                 }
             }
         }
-        
+
         foreach($Job in $Jobs){
         Get-Job | Wait-Job
 
