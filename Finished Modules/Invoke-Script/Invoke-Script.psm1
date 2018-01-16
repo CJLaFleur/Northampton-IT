@@ -5,7 +5,7 @@ param(
            Position = 0,
            ValueFromPipelineByPropertyName=$True,
            HelpMessage = "Enter the target computer name to be targeted. Can be multiple names.")]
-           [Alias('Hostname','CN', 'ComputerName')]
+           [Alias('Hostname','CN', 'ComputerName', 'Name')]
            [String[]]$CName,
 
 [Parameter(Mandatory=$False,
