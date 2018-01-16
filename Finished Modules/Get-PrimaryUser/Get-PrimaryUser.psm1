@@ -5,12 +5,8 @@ param(
            Position = 0,
            ValueFromPipelineByPropertyName=$True,
            HelpMessage = "Enter the target computer name to be targeted. Can be multiple names.")]
-           [Alias('HostName','CN', 'ComputerName')]
+           [Alias('HostName','CN', 'ComputerName', 'Name')]
            [String[]]$CName,
-
-[Parameter(Mandatory = $False,
-           HelpMessage ="Set this if you want to include HostNames that could not be resolved.")]
-           [Switch]$Full,
 
 [Parameter(Mandatory=$False,
            HelpMessage = "Set this flag to output the status of each attempt to a CSV file.")]
