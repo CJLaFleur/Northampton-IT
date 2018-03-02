@@ -25,7 +25,7 @@ param(
     BEGIN{
         
         if($OutCSV){
-        $OutPath = "C:\users\clafleur\OSInfo.csv"
+        $OutPath = "C:\Users\$env:UserName\Documents\OSInfo.csv"
         Remove-Item -Path $OutPath -Force -EA SilentlyContinue
         $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
         $FileHandle.AutoFlush = $True
