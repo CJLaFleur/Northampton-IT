@@ -1,7 +1,6 @@
 ﻿<#
 .Synopsis
 Gets the version of Windows on domain or network computers.
-
 .Notes
 Author: Connor James LaFleur
 Copyright: Connor James LaFleur, 7/6/17 9:23AM Eastern Time
@@ -24,12 +23,14 @@ param(
            )
 
     BEGIN{
+        
         if($OutCSV){
-        $OutPath = "C:\OSInfo.csv"
+        $OutPath = "C:\users\clafleur\OSInfo.csv"
         Remove-Item -Path $OutPath -Force -EA SilentlyContinue
         $FileHandle = New-Object System.IO.StreamWriter -Arg $OutPath
         $FileHandle.AutoFlush = $True
         }
+        
         $VersionInfo = New-Object System.Collections.Generic.List[System.Object]
     }
 
@@ -42,10 +43,18 @@ param(
 
                     $OSInfo | Add-Member -Type NoteProperty -Name HostName -Value $CN -Force
                     $OSInfo | Add-Member -Type NoteProperty -Name OSVersion -Value $OS -Force
+
+                     if($OutCSV){
+                        $FileHandle.WriteLine("$CN, $OS")
+                        }
                 }
                 catch{
                     $OSInfo | Add-Member -Type NoteProperty -Name HostName -Value $CN -Force
-                    $OSInfo | Add-Member -Type NoteProperty -Name OSVersion -Value "OS Version could not be found" -Force
+                    $OSInfo | Add-Member -Type NoteProperty -Name OSVersion -Value "OS version could not be found" -Force
+
+                     if($OutCSV){
+                        $FileHandle.WriteLine("$CN, 'OS version could not be found'")
+                        }
                 }
                 $VersionInfo.Add($OSInfo)
             }
