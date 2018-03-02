@@ -67,6 +67,7 @@ param(
             $FileHandle.Dispose()
             $FileHandle.Close()
         }
+        
         return $VersionInfo
     }
 }
