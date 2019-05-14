@@ -1,4 +1,4 @@
-function Get-LocalAdmin{
+function Get-DomainUsers{
 
 [CmdletBinding()]
   param(
